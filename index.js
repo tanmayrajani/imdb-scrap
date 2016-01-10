@@ -2,8 +2,10 @@ var nm = "nm1567113";	// Jessica Chastain, bitches! <3
 var request = require("request"),
 	cheerio = require("cheerio"),
 	fs = require('fs'),
-	sc = [],
-	url1 = "http://www.imdb.com/name/"+nm+"/mediaindex?page=" ;
+	path = require('path'),
+	sc = [];
+if(process.argv[2]) nm = process.argv[2].toString();
+var url1 = "http://www.imdb.com/name/"+nm+"/mediaindex" ;
 var number;
 
 request(url1, function (error, response, body) {
@@ -35,10 +37,20 @@ function everyFuckingPhoto (url2, callback) {
 function downloadingImage (imgUrl2, next) {
 	request(imgUrl2)
 		.on('response',  function (res) {
-  			res.pipe(fs.createWriteStream('./media/'+nm+'-'+number+'.jpg'));
+			mkdirSync(path.join('media'));
+  			mkdirSync(path.join('media',nm));
+  			res.pipe(fs.createWriteStream('./media/'+nm+'/'+nm+'-'+number+'.jpg'));	
 		})
 		.on('error', function (err) {
 			console.log(err);
 		});
 	everyFuckingPhoto(next, downloadingImage);
+}
+
+function mkdirSync (path) {
+  try {
+    fs.mkdirSync(path);
+  } catch(e) {
+    if ( e.code != 'EEXIST' ) throw e;
+  }
 }
