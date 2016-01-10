@@ -30,14 +30,7 @@ function everyFuckingPhoto (url) {
 			nextUrl = 'http://imdb.com' + $('#right a').first().attr('href'),
 			imgUrl = $('.photo a img').attr('src');
 			console.log(imgUrl);
-			
-			request(imgUrl)
-			.on('response',  function (res) {
-  				res.pipe(fs.createWriteStream('./media/jessica-'+number+'.jpg'));
-			})
-			.on('error', function (err) {
-				console.log(err);
-			});
+			downloadingImage(imgUrl);
 			// get the fucking image 
 			if(number--) everyFuckingPhoto(nextUrl)
 		}
@@ -45,4 +38,14 @@ function everyFuckingPhoto (url) {
 
 		}
 	})
+}
+
+function downloadingImage (imgUrl) {
+	request(imgUrl)
+			.on('response',  function (res) {
+  				res.pipe(fs.createWriteStream('./media/jessica-'+number+'.jpg'));
+			})
+			.on('error', function (err) {
+				console.log(err);
+			});
 }
