@@ -2,9 +2,9 @@ var nm = "nm1567113";	// Jessica Chastain, bitches! <3
 var request = require("request"),
 	cheerio = require("cheerio"),
 	fs = require('fs'),
-	path = require('path'),
-	sc = [];
-if(process.argv[2]) nm = process.argv[2].toString();
+	path = require('path');
+
+if(process.argv[2]) nm = process.argv[2].toString();  // Just in case, if you don't like Jessica.. you know
 var mainUrl = "http://www.imdb.com/name/"+nm+"/mediaindex" ;
 var number;
 var celName="";
@@ -14,9 +14,9 @@ request(mainUrl, function (error, response, body) {
 		var $ = cheerio.load(body),
 		num = $('.desc').first().text(),
 		celName = $('h3 a').first().text();
-		number = num.substring(num.indexOf('of')+3,num.lastIndexOf(0)+1);
+		number = num.substring(num.indexOf('of')+3,num.lastIndexOf(" "));
 		var nextUrl = 'http://imdb.com' + $('.media_index_thumb_list a:nth-child(1)').attr('href');
-		console.log(nextUrl)
+		console.log(nextUrl);
 		everyFuckingPhoto(nextUrl, celName, downloadingImage);
 	} else {
 		console.log("Mood nathi yaar: " + error);
@@ -46,13 +46,14 @@ function downloadingImage (imgUrl, celName, next) {
 		.on('error', function (err) {
 			console.log(err);
 		});
+
 	everyFuckingPhoto(next, celName, downloadingImage);
 }
 
 function mkdirSync (path) {
-  try {
-    fs.mkdirSync(path);
-  } catch(e) {
-    if ( e.code != 'EEXIST' ) throw e;
-  }
+	try {
+		fs.mkdirSync(path);
+	} catch(e) {
+		if ( e.code != 'EEXIST' ) throw e;
+	}
 }
