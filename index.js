@@ -1,24 +1,25 @@
-var nm = "nm1567113";	// Jessica Chastain! <3
-var request = require("request"),
+var nm = "nm1567113",	// Jessica Chastain! <3
+	request = require("request"),
 	cheerio = require("cheerio"),
 	fs = require('fs'),
 	path = require('path');
 
-if(process.argv[2]) nm = process.argv[2].toString();  // Just in case, if you don't like Jessica.. you know :D
+if(process.argv[2]) nm = process.argv[2].toString();  // Just in case, you don't like Jessica.. you know :D
 var mainUrl = "http://www.imdb.com/name/"+nm+"/mediaindex" ,
-number,
-celName="";
+	number,
+	celName="";
 
 request(mainUrl, function (error, response, body) {
 	if (!error) {
 		var $ = cheerio.load(body),
-		num = $('.desc').first().text(),
+		num = $('.desc').first().text(),  
 		celName = $('h3 a').first().text();  // Getting Celebrity Name For folder-name
-		number = num.substring(num.indexOf('of')+3,num.lastIndexOf(" "));
+		number = num.substring(num.indexOf('of')+3,num.lastIndexOf(" "));  // Trying to get number of Photos 
 		var nextUrl = 'http://imdb.com' + $('.media_index_thumb_list a:nth-child(1)').attr('href');
 		console.log(nextUrl);
 		getEveryPhoto(nextUrl, celName, downloadingImage);
-	} else {
+	} 
+	else {
 		console.log("Error requesting main URL: " + error);
 	}
 });
@@ -33,21 +34,35 @@ function getEveryPhoto (url, celName, callback) {
 			console.log(nextUrl);
 			callback(imgUrl, celName, nextUrl);
 		}
+		else{
+			console.log("Error requesting URL 1: " + error);
+		}
 	})
 }
 
 function downloadingImage (imgUrl, celName, next) {
-	request(imgUrl)
-		.on('response',  function (res) {
-			mkdirSync(path.join('media'));
-  			mkdirSync(path.join('media',celName));
-  			res.pipe(fs.createWriteStream('./media/'+celName+'/'+nm+'-'+number+'.jpg'));	
-		})
-		.on('error', function (err) {
-			console.log(err);
-		});
+	
+	var data;
+	mkdirSync(path.join('media'));
+	mkdirSync(path.join('media',celName));
 
-	getEveryPhoto(next, celName, downloadingImage);
+	try {
+		data = fs.readFileSync('./media/'+celName+'/'+nm+'-'+number+'.jpg');
+		console.log('skipping..')
+		getEveryPhoto(next, celName, downloadingImage);
+	} catch (e) {
+		request(imgUrl)
+			.on('response',  function (res) {
+				var stream = fs.createWriteStream('./media/'+celName+'/'+nm+'-'+number+'.jpg');
+				stream.on('close',function () {
+					getEveryPhoto(next, celName, downloadingImage);	
+				})
+				res.pipe(stream);
+			})
+			.on('error', function (err) {
+				console.log(err);
+			});
+	}	
 }
 
 function mkdirSync (path) {
